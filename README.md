@@ -125,8 +125,8 @@ Here we use DS3231 RTCs.
 Each Pi uses a DS3231 RTC module so it keeps correct time in the field
 without WiFi.
 
-![*Raspberry Pi 3b Pinout
-Diagram*](images/GPIO-Pinout-Diagram-2.png "Raspberry Pi 3b Pinout Diagram"){width="490"}
+[![*Raspberry Pi 3b Pinout
+Diagram*](images/GPIO-Pinout-Diagram-2.png "Raspberry Pi 3b Pinout Diagram"){width="490"}](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html)
 
 Connect the DS3231 to pins 1,3,5, 7, & 9
 
@@ -236,3 +236,5 @@ Save and reconnect.
 # Future Improvements
 
 -   [ ] convert to `requirements.txt`
+-   [ ] add info on PiConnect
+-   [ ] Add rasppi imager info
