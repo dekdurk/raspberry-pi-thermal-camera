@@ -108,16 +108,31 @@ If camera isn’t detected:
 Previously, we used Raspberry Pi 5s, which have RTCs pre-installed, but
 needed an watch battery attachment to provide constant power.
 
-The Raspberry Pi 3bs do not have pre-installed R![Raspberry Pi 3b Pinout
-Diagram](images/GPIO-Pinout-Diagram-2.png)TCs, so we have to install
-them on the pins and set it up.
+The Raspberry Pi 3bs do not have pre-installed RTCs, so we have to
+install them on the pins and set it up.
+
+## 1. Install DS3231 RTC
 
 Here we use DS3231 RTCs.
+
+![*Example of DS3231 RTC for Raspberry Pi
+3b*](images/rtc_DS3231.jpg){width="128"}
 
 Each Pi uses a DS3231 RTC module so it keeps correct time in the field
 without WiFi.
 
-## 1. Enable I2C
+![*Raspberry Pi 3b Pinout
+Diagram*](images/GPIO-Pinout-Diagram-2.png "Raspberry Pi 3b Pinout Diagram"){width="490"}
+
+Connect the DS3231 to pins 1,3,5, 7, & 9
+
+Here is what is should look like when installed:
+
+![Top-down view of properly installed
+DS3231](images/rtc_installed_top.jpg){width="245"} ![Angled view of
+properly installed DS3231](images/rtc_installed_side.jpeg){width="308"}
+
+## 2. Enable I2C
 
 Open config tool: `sudo raspi-config`
 
@@ -125,7 +140,7 @@ Navigate to: `Interface Options → I2C → Enable`
 
 Reboot if prompted.
 
-## 2. Confirm RTC is detected
+## 3. Confirm RTC is detected
 
 Run: `sudo i2cdetect -y 1`
 
@@ -133,7 +148,7 @@ You should see address: `68`
 
 If you do not see `68`, check wiring.
 
-## 3. Enable RTC overlay
+## 4. Enable RTC overlay
 
 Edit config file: `sudo nano /boot/config.txt`
 
@@ -141,7 +156,7 @@ Add this line at the bottom:`dtoverlay=i2c-rtc,ds3231`
 
 Save and exit.
 
-## 4. Disable the fake hardware clock
+## 5. Disable the fake hardware clock
 
 The internet claims that the Pi uses a fake clock by default, but every
 time I try this on the Pi 3bs it shows that the module doesn't exist. So
@@ -153,14 +168,14 @@ you can try the following code, but I think it's useless.
 
 3.  `sudo systemctl disable fake-hwclock`
 
-## 5. Sync RTC
+## 6. Sync RTC
 
 While the Pi has correct time (via WiFi or manual set), run:
 `sudo hwclock -w`
 
 This writes system time to the RTC.
 
-## 6. Verify time
+## 7. Verify time
 
 `timedatectl`
 
@@ -173,7 +188,7 @@ Make sure:
 
 To set timezone: `sudo timedatectl set-timezone America/Phoenix`
 
-## 7. Test RTC (IMPORTANT before field deployment)
+## 8. Test RTC (IMPORTANT before field deployment)
 
 1.  Turn off WiFi
 
