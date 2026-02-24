@@ -154,11 +154,23 @@ If you do not see `68`, check wiring.
 
 ## 4. Enable RTC overlay
 
-Edit config file: `sudo nano /boot/config.txt`
+Edit config file: `sudo nano /boot/firmware/config.txt`
+
+-   **Note:** Was previously
+    `/boot/firmware/config.txt` and might be recomended by forums online, but you'll be prompted to go to `/boot/firmware/config.txt`
 
 Add this line at the bottom:`dtoverlay=i2c-rtc,ds3231`
 
-Save and exit.
+Save and exit:
+
+    -   `Ctrl + O` to save
+
+    -   `Enter`
+
+    -   `Ctrl + X` to exit
+
+    -   `sudo reboot`
+    
 
 ## 5. Disable the fake hardware clock
 
@@ -174,10 +186,11 @@ you can try the following code, but I think it's useless.
 
 ## 6. Sync RTC
 
-While the Pi has correct time (via WiFi or manual set), run:
-`sudo hwclock -w`
+**NOPE**
+    While the Pi has correct time (via WiFi or manual set), run:
+    `sudo hwclock -w`
 
-This writes system time to the RTC.
+    This writes system time to the RTC.
 
 ## 7. Verify time
 
@@ -190,7 +203,7 @@ Make sure:
     -   I use America/Phoenix (aka MST) to avoid daylight savings issues
         and since the tower data is on MST
 
-To set timezone: `sudo timedatectl set-timezone America/Phoenix`
+**NOPE** To set timezone: `sudo timedatectl set-timezone America/Phoenix`
 
 ## 8. Test RTC (IMPORTANT before field deployment)
 
@@ -205,8 +218,6 @@ To set timezone: `sudo timedatectl set-timezone America/Phoenix`
 4.  Power Pi back on (no internet)
 
 5.  Check Time
-
-    -   Insert Image here
 
 The time should still be correct. If not, the RTC is not configured
 correctly.
@@ -238,3 +249,5 @@ Save and reconnect.
 -   [ ] convert to `requirements.txt`
 -   [ ] add info on PiConnect
 -   [ ] Add rasppi imager info
+
+Required edits: thermal_image_cap_float32.py line 87 save_dir = "/home/tc2/Desktop/raw_data/"
