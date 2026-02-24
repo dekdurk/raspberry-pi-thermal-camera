@@ -17,6 +17,10 @@ This setup:
 
 -   logs output for debugging
 
+cd \~/Desktop
+
+git clone <https://github.com/dekdurk/raspberry-pi-thermal-camera.git>
+
 # packages to download
 
 Currently I use `sudo apt install python3-` to do this, since i
