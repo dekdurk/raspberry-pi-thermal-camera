@@ -108,8 +108,9 @@ If camera isn’t detected:
 Previously, we used Raspberry Pi 5s, which have RTCs pre-installed, but
 needed an watch battery attachment to provide constant power.
 
-The Raspberry Pi 3bs do not have pre-installed RTCs, so we have to
-install them on the pins and set it up.
+The Raspberry Pi 3bs do not have pre-installed R![Raspberry Pi 3b Pinout
+Diagram](images/GPIO-Pinout-Diagram-2.png)TCs, so we have to install
+them on the pins and set it up.
 
 Here we use DS3231 RTCs.
 
