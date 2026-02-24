@@ -1,20 +1,218 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
 # raspberry-pi-thermal-camera
-Workflow and scripts for setting up raspberry pis to use thermal cameras in the field
 
-## packages to download
-currently I use sudo apt install python3- to do this, since i typically run into issues using pip where the packages can't be found. But i want to test try again to see if i can set up a requirements.txt to make this easier. However, there are only 2 packages needed, so it's not too bad.
+Workflow and scripts for setting up Raspberry Pis to run thermal cameras
+for field deployments (MPJ site).
 
-sudo apt install python3-opencv
-sudo apt install python3-rasterio
+This setup:
 
-# crontab
-in terminal type crontab -e
-- You might have to create a new crontab document. I select 1.
+-   captures thermal images every 15 minutes
 
-Add to very bottom:
-*/15 * * * * /usr/bin/python3 /home/tc3b/Desktop/thermal_image_cap_float32.py >> /home/tc3b/Desktop/thermal_capture.log 2>&1
+-   saves them locally with timestamps
 
-ctrl+O to save
-ctrl+X to exit
+-   logs output for debugging
 
-sudo reboot
+# packages to download
+
+Currently I use `sudo apt install python3-` to do this, since i
+typically run into issues using `pip` where the packages can't be found.
+
+Only two required packages:
+
+-   `sudo apt install python3-opencv`
+
+-   `sudo apt install python3-rasterio`
+
+**Note:** In the future, we may switch to a requirements.txt, but for
+now `apt` is more reliable on fresh Pi installs.
+
+# Scripts
+
+Place the capture script somewhere accessible, for example:
+
+`/home/tc3b/Desktop/thermal_image_cap_float32.py`
+
+Make sure the script:
+
+-   connects to the camera
+
+-   captures an image when called
+
+-   saves images to a known directory
+
+-   prints a timestamp (for logging/debugging)
+
+# Set Up Automatic Capture (crontab)
+
+1.  Open crontab: `crontab -e`
+
+2.  If prompted, select **option 1** (nano editor).
+
+3.  Add this line to the bottom of the file:
+
+    `*/15* \* \* \* /usr/bin/python3 /home/tc3b/Desktop/thermal_image_cap_float32.py \>\> /home/tc3b/Desktop/thermal_capture.log 2\>&1`
+
+    -   **What this does:**
+
+        -   runs the script every 15 minutes
+
+        -   logs all output to `thermal_capture.log`
+
+4.  Save and exit:
+
+    -   `Ctrl + O` to save
+
+    -   `Enter`
+
+    -   `Ctrl + X` to exit
+
+    -   `sudo reboot`
+
+5.  Test That It Works
+
+    1.  After reboot wait till you pass the next 15-min mark of the hour
+        ( :00, :15, :30, :45)
+
+    2.  Check log file `cat /home/tc3b/Desktop/thermal_capture.log`
+
+        -   You should see timestamps or output from your script.
+
+    3.  Check images directory.
+
+        -   Make sure new images are being created every 15 minutes.
+
+## Notes & Tips
+
+If the script doesn’t run:
+
+-   check log file
+
+-   confirm file path is correct
+
+-   confirm Python path is `/usr/bin/python3`
+
+If camera isn’t detected:
+
+-   make sure OpenCV installed correctly
+
+-   test script manually:
+    `python3 /home/tc3b/Desktop/thermal_image_cap_float32.py`
+
+# Set Up Real Time Clock (RTC)
+
+Previously, we used Raspberry Pi 5s, which have RTCs pre-installed, but
+needed an watch battery attachment to provide constant power.
+
+The Raspberry Pi 3bs do not have pre-installed RTCs, so we have to
+install them on the pins and set it up.
+
+Here we use DS3231 RTCs.
+
+Each Pi uses a DS3231 RTC module so it keeps correct time in the field
+without WiFi.
+
+## 1. Enable I2C
+
+Open config tool: `sudo raspi-config`
+
+Navigate to: `Interface Options → I2C → Enable`
+
+Reboot if prompted.
+
+## 2. Confirm RTC is detected
+
+Run: `sudo i2cdetect -y 1`
+
+You should see address: `68`
+
+If you do not see `68`, check wiring.
+
+## 3. Enable RTC overlay
+
+Edit config file: `sudo nano /boot/config.txt`
+
+Add this line at the bottom:`dtoverlay=i2c-rtc,ds3231`
+
+Save and exit.
+
+## 4. Disable the fake hardware clock
+
+The internet claims that the Pi uses a fake clock by default, but every
+time I try this on the Pi 3bs it shows that the module doesn't exist. So
+you can try the following code, but I think it's useless.
+
+1.  `sudo apt remove fake-hwclock`
+
+2.  `sudo update-rc.d -f fake-hwclock remove`
+
+3.  `sudo systemctl disable fake-hwclock`
+
+## 5. Sync RTC
+
+While the Pi has correct time (via WiFi or manual set), run:
+`sudo hwclock -w`
+
+This writes system time to the RTC.
+
+## 6. Verify time
+
+`timedatectl`
+
+Make sure:
+
+-   correct local time
+-   timezone set correctly
+    -   I use America/Phoenix (aka MST) to avoid daylight savings issues
+        and since the tower data is on MST
+
+To set timezone: `sudo timedatectl set-timezone America/Phoenix`
+
+## 7. Test RTC (IMPORTANT before field deployment)
+
+1.  Turn off WiFi
+
+    -   Insert Image here
+
+2.  Unplug Pi from power
+
+3.  Wait \~5–10 minutes
+
+4.  Power Pi back on (no internet)
+
+5.  Check Time
+
+    -   Insert Image here
+
+The time should still be correct. If not, the RTC is not configured
+correctly.
+
+# Set up Ethernet
+
+## Set static IP (desktop method)
+
+Click network icon (top right)
+
+```         
+- Insert Image here
+```
+
+Go to Wired Connection Settings: IPv4 method → Manual
+
+Enter: Address: 10.42.0.158 (change per Pi)
+
+Netmask: 255.255.255.0
+
+Gateway: 10.42.0.1
+
+DNS: 10.42.0.1
+
+Save and reconnect.
+
+# Future Improvements
+
+-   [ ] convert to `requirements.txt`
