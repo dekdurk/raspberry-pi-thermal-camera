@@ -83,8 +83,10 @@ args.capture_single_image = True
 ######## Parse command line arguments
 # Directory to save images and data
 save_dir = args.save_dir
-#save_dir = "/media/tc3/TC3_TD/raw_data/" #DK
-save_dir = "/home/tc2/Desktop/raw_data/"
+
+# CHANGE THIS PATH TO WORK WITH YOUR PI 
+# - Derek Kober
+save_dir = "/home/YOUR_PI_NAME/Desktop/raw_data/"
 
 # This is so that we can keep track of when issues did happen in the log file
 # -DK
