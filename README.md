@@ -37,9 +37,36 @@ now `apt` is more reliable on fresh Pi installs.
 
 # Scripts
 
-Place the capture script somewhere accessible, for example:
+There are 2 scripts needed for setup:
 
-`/home/tc3b/Desktop/thermal_image_cap_float32.py`
+## 1. `live_view.py`
+
+-   Gets live stream from the thermal camera.
+
+-   Used in initial setup when checking FOV and adjusting focus
+
+After installing the python libraries, I'll plug in the camera, and run
+this script to check that:
+
+-   I didn't miss a library,
+
+-   connection works,
+
+-   camera is working,
+
+-   general sanity check before moving on.
+
+## 2. `thermal_image_cap_float32.py`
+
+-   The main script which captures the thermal images.
+
+**You need to edit this script for each pi.**
+
+Go to line 87
+
+Change `save_dir` to where you want the data saved
+
+-   `save_dir = "/home/YOUR_PI_NAME/Desktop/raw_data/"`
 
 Make sure the script:
 
@@ -59,7 +86,7 @@ Make sure the script:
 
 3.  Add this line to the bottom of the file:
 
-    `*/15* \* \* \* /usr/bin/python3 /home/tc3b/Desktop/thermal_image_cap_float32.py \>\> /home/tc3b/Desktop/thermal_capture.log 2\>&1`
+    `*15* * * * /usr/bin/python3 /home/tc3b/Desktop/thermal_image_cap_float32.py >> /home/tc3b/Desktop/thermal_capture.log 2>&1`
 
     -   **What this does:**
 
@@ -120,21 +147,22 @@ install them on the pins and set it up.
 Here we use DS3231 RTCs.
 
 ![*Example of DS3231 RTC for Raspberry Pi
-3b*](images/rtc_DS3231.jpg){width="128"}
+3b*](readme_supplemental/rtc_DS3231.jpg){width="128"}
 
 Each Pi uses a DS3231 RTC module so it keeps correct time in the field
 without WiFi.
 
-[![*Raspberry Pi 3b Pinout
-Diagram*](images/GPIO-Pinout-Diagram-2.png "Raspberry Pi 3b Pinout Diagram"){width="490"}](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html)
+[![Raspberry Pi 3b Pinout
+Diagram](readme_supplemental/GPIO-Pinout-Diagram-2.png "Raspberry Pi 3b Pinout Diagram"){width="490"}](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html)
 
 Connect the DS3231 to pins 1,3,5, 7, & 9
 
 Here is what is should look like when installed:
 
 ![Top-down view of properly installed
-DS3231](images/rtc_installed_top.jpg){width="245"} ![Angled view of
-properly installed DS3231](images/rtc_installed_side.jpeg){width="308"}
+DS3231](readme_supplemental/rtc_installed_top.jpg){width="245"} ![Angled
+view of properly installed
+DS3231](readme_supplemental/rtc_installed_side.jpeg){width="308"}
 
 ## 2. Enable I2C
 
@@ -144,33 +172,40 @@ Navigate to: `Interface Options → I2C → Enable`
 
 Reboot if prompted.
 
+[I2C Visual Guide (PDF)](readme_supplemental/enable_i2c.pdf)
+
 ## 3. Confirm RTC is detected
 
 Run: `sudo i2cdetect -y 1`
 
 You should see address: `68`
 
-If you do not see `68`, check wiring.
+![](readme_supplemental/rtc_address_68.jpeg){width="342"}
+
+If you do not see `68`, check wiring and battery charge.
 
 ## 4. Enable RTC overlay
 
 Edit config file: `sudo nano /boot/firmware/config.txt`
 
--   **Note:** Was previously
-    `/boot/firmware/config.txt` and might be recomended by forums online, but you'll be prompted to go to `/boot/firmware/config.txt`
+-   **Note:** Was previously `/boot/firmware/config.txt` and might be
+    recomended by forums online, but you'll be prompted to go to
+    `/boot/firmware/config.txt`
 
 Add this line at the bottom:`dtoverlay=i2c-rtc,ds3231`
 
+![](readme_supplemental/rtc_enable_overlay.jpeg){width="342"}
+
 Save and exit:
+       
+-   `Ctrl + O` to save
 
-    -   `Ctrl + O` to save
+-   `Enter`
 
-    -   `Enter`
+-   `Ctrl + X` to exit
 
-    -   `Ctrl + X` to exit
+-   `sudo reboot`
 
-    -   `sudo reboot`
-    
 
 ## 5. Disable the fake hardware clock
 
@@ -184,26 +219,21 @@ you can try the following code, but I think it's useless.
 
 3.  `sudo systemctl disable fake-hwclock`
 
-## 6. Sync RTC
-
-**NOPE**
-    While the Pi has correct time (via WiFi or manual set), run:
-    `sudo hwclock -w`
-
-    This writes system time to the RTC.
-
-## 7. Verify time
+## 6. Verify time
 
 `timedatectl`
 
 Make sure:
 
 -   correct local time
--   timezone set correctly
+-   time zone set correctly
     -   I use America/Phoenix (aka MST) to avoid daylight savings issues
         and since the tower data is on MST
+    -   It is okay if the RTC is not in local time. As long as it's
+        synced and the Pi knows to adjust to local time, all should be
+        well.
 
-**NOPE** To set timezone: `sudo timedatectl set-timezone America/Phoenix`
+![](readme_supplemental/rtc_sync_check.jpeg){width="342"}
 
 ## 8. Test RTC (IMPORTANT before field deployment)
 
@@ -228,26 +258,45 @@ correctly.
 
 Click network icon (top right)
 
-```         
-- Insert Image here
-```
+Go to Edit Connections
 
-Go to Wired Connection Settings: IPv4 method → Manual
+![](readme_supplemental/ethernet_edit_connections.jpeg){width="600"}
 
-Enter: Address: 10.42.0.158 (change per Pi)
+Add a new connection
 
-Netmask: 255.255.255.0
+![](readme_supplemental/ethernet_add_connection.jpeg){width="600"}
 
-Gateway: 10.42.0.1
+Select Ethernet
 
-DNS: 10.42.0.1
+![](readme_supplemental/ethernet_select_ethernet.jpeg){width="600"}
 
-Save and reconnect.
+Go to the IPv4 settings tab
+
+![](readme_supplemental/ethernet_ipv4.jpeg){width="600"}
+
+Change the connection method to Manual
+
+![](readme_supplemental/ethernet_method_manual.jpeg){width="600"}
+
+Enter:
+
+-   IP address you want the pi to connect to
+
+-   Netmask (i.e. Subnet Mask)
+
+-   Gateway
+
+-   DNS
+
+Save
+
+![](readme_supplemental/ethernet_fill_and_save.jpeg){width="600"}
+
+After this, the pi should automatically connect to the IP address when
+the Ethernet cable is plugged in.
 
 # Future Improvements
 
 -   [ ] convert to `requirements.txt`
 -   [ ] add info on PiConnect
 -   [ ] Add rasppi imager info
-
-Required edits: thermal_image_cap_float32.py line 87 save_dir = "/home/tc2/Desktop/raw_data/"
