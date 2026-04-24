@@ -86,7 +86,7 @@ Make sure the script:
 
 3.  Add this line to the bottom of the file:
 
-    `*15* * * * /usr/bin/python3 /home/tc3b/Desktop/thermal_image_cap_float32.py >> /home/tc3b/Desktop/thermal_capture.log 2>&1`
+    `*/15* * * * /usr/bin/python3 /home/tc3b/Desktop/thermal_image_cap_float32.py >> /home/tc3b/Desktop/thermal_capture.log 2>&1`
 
     -   **What this does:**
 
